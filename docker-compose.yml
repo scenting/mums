@@ -1,0 +1,23 @@
+version: "2"
+
+volumes:
+    db_data: {}
+
+services:
+    db:
+        image: postgres:9.5
+        volumes:
+            - db_data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:3.0
+
+    web:
+        build: .
+        ports:
+            - "8000:8000"
+        depends_on:
+            - db
+            - redis
+        volumes:
+            - ".:/app"

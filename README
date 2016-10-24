@@ -1,0 +1,63 @@
+
+# Migrate DB
+docker-compose run --rm web python manage.py migrate
+
+# Create superuser
+docker-compose run --rm web python manage.py createsuperuser
+
+Probar borrando el volumen, igual no espera a que este levantado
+
+
+products = [
+    {
+        'name':'Ensalada de espinacas',
+        'price':1.65,
+        'category':0,
+        'unitary':False,
+    }, {
+        'name':'Tortellini alla carbonara',
+        'price':1.30,
+        'category':0,
+        'unitary':False,
+    }, {
+        'name':'Pollo al curry',
+        'price':1.55,
+        'category':0,
+        'unitary':False,
+    }, {
+        'name':'Arroz con verduras',
+        'price':1.55,
+        'category':0,
+        'unitary':False,
+    }, {
+        'name':'Pizza primavera',
+        'price':2,
+        'category':0,
+        'unitary':True,
+    }, {
+        'name':'Carne estofada',
+        'price':2.15,
+        'category':0,
+        'unitary':False,
+    }, {
+        'name':'Agua',
+        'price':1.20,
+        'category':2,
+        'unitary':True,
+    },{
+        'name':'Zumo de naranja',
+        'price':2,
+        'category':2,
+        'unitary':True,
+    }, {
+        'name':'Manzana',
+        'price':2,
+        'category':3,
+        'unitary':True,
+    }, {
+        'name':'Tarta de queso',
+        'price':2.5,
+        'category':3,
+        'unitary':True,
+    },
+]
