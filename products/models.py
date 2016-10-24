@@ -34,4 +34,12 @@ class Order(models.Model):
 
     complete = models.BooleanField(_(u'Is complete'), default=False)
 
-    products = models.ManyToManyField(Product)
+    products = models.ManyToManyField(Product, through='OrderProduct')
+
+
+class OrderProduct(models.Model):
+    order = models.ForeignKey(Order)
+
+    products = models.ForeignKey(Product)
+
+    quantity = models.IntegerField(_(u'Quantity'))
