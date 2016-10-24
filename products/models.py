@@ -40,6 +40,6 @@ class Order(models.Model):
 class OrderProduct(models.Model):
     order = models.ForeignKey(Order)
 
-    products = models.ForeignKey(Product)
+    product = models.ForeignKey(Product)
 
     quantity = models.IntegerField(_(u'Quantity'))
