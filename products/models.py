@@ -24,6 +24,8 @@ class Product(models.Model):
 
     unitary = models.BooleanField(_(u'Is unitary'), default=True)
 
+    stock = models.IntegerField(_(u'Stock'), default=0)
+
 
 class Order(models.Model):
 
