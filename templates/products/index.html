@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Select your products:</h2>
+    <form class="post-form" id="orderForm">
+        <table>
+        {% for product in products %}
+            <tr>
+                <td><p>{{product.name}}</p></td>
+                <td><p>{{product.price}}</p></td>
+                <td>
+                    <input name="product" type="hidden" value="{{product.id}}">
+                    <input name="quantity" type="number" value="0">
+                </td>
+            </tr>
+        {% endfor %}
+        </table>
+        <button type="submit" class="save btn btn-default">Order</button>
+    </form>
+{% endblock %}
+
+{% block js %}
+<script>
+    var url_new_order = "{% url "new_order" %}"
+
+    $('#orderForm').submit(function(event) {
+        var self = this;
+        event.preventDefault();
+
+        var inputs = $.find('#orderForm input[name="quantity"]');
+
+        var products = [];
+        $.each(inputs, function(index, input) {
+            if (input.value > 0) {
+                var product = $(input).siblings()[0].value;
+                products.push({"product": product, "quantity": input.value})
+            }
+        });
+
+        $.ajax({
+            dataType: 'json',
+            contentType: "application/json",
+            url: '/api/v1/order/',
+            type: 'POST',
+            traditional: true,
+            data: JSON.stringify({'products': products}),
+            complete: function(data) {
+                if (data.status === 201) {
+                    order_id = data.responseJSON.id
+                    window.location.replace(
+                        url_new_order +"/?order=" + order_id
+                    );
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

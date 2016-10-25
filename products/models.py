@@ -26,6 +26,9 @@ class Product(models.Model):
 
     stock = models.IntegerField(_(u'Stock'), default=0)
 
+    def enough_stock(self, quantity):
+        return True
+
 
 class Order(models.Model):
 
@@ -34,7 +37,8 @@ class Order(models.Model):
 
     complete = models.BooleanField(_(u'Is complete'), default=False)
 
-    products = models.ManyToManyField(Product, through='OrderProduct')
+    products = models.ManyToManyField(Product, through='OrderProduct',
+                                      related_name='order_products')
 
 
 class OrderProduct(models.Model):

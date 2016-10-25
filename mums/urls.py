@@ -13,12 +13,26 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+import debug_toolbar
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
-import debug_toolbar
+
+from products.api.resources_v1 import OrderResource, ProductResource, \
+    OrderProductResource
+from products.views import index, new_order
+from tastypie.api import Api
+
+
+v1_api = Api(api_name='v1')
+v1_api.register(OrderResource())
+v1_api.register(ProductResource())
+v1_api.register(OrderProductResource())
 
 urlpatterns = [
+    url(r'^$', index, name='index'),
+    url(r'^new_order$', new_order, name='new_order'),
+    url(r'^api/', include(v1_api.urls)),
     url(r'^admin/', admin.site.urls),
 ]
 
