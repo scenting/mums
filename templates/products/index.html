@@ -10,7 +10,7 @@
                 <td><p>{{product.price}}</p></td>
                 <td>
                     <input name="product" type="hidden" value="{{product.id}}">
-                    <input name="quantity" type="number" value="0">
+                    <input name="quantity" type="number" value="0" min="0">
                 </td>
             </tr>
         {% endfor %}
@@ -48,7 +48,7 @@
                 if (data.status === 201) {
                     order_id = data.responseJSON.id
                     window.location.replace(
-                        url_new_order +"/?order=" + order_id
+                        url_new_order +"?order=" + order_id
                     );
                 }
             }

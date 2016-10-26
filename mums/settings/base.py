@@ -147,7 +147,7 @@ USE_TZ = True
 
 TASTYPIE_DEFAULT_FORMATS = ['json']
 
-ORDER_TIMEOUT = 60  # Timeout for processing an order, in seconds
+ORDER_TIMEOUT = 10  # Timeout for processing an order, in seconds
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
