@@ -14,7 +14,7 @@ services:
 
     celery:
         build: .
-        command: celery -A mums worker -l debug
+        command: celery -A mums worker -l info
         depends_on:
             - db
             - redis

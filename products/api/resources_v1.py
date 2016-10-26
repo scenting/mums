@@ -7,7 +7,10 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.validation import Validation
 from tastypie import fields
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+
 from products.models import Product, Order, OrderProduct
+from products.tasks import check_order
 
 
 class ProductResource(ModelResource):
@@ -36,7 +39,7 @@ class OrderValidation(Validation):
 
         for product_row in bundle.data.get('products'):
             product = get_object_or_404(Product, pk=product_row.get('product'))
-            if not product.enough_stock(product_row.get('quantity')):
+            if not product.enough_stock(int(product_row.get('quantity'))):
                 errors['quantity'] = 'Not enough stock'
 
         return errors
@@ -66,18 +69,28 @@ class OrderResource(ModelResource):
 
     def save(self, bundle, skip_errors=False):
 
-        errors = self.is_valid(bundle)
-        if errors:
-            raise ImmediateHttpResponse(HttpBadRequest(errors))
+        if not self.is_valid(bundle):
+            raise ImmediateHttpResponse(HttpBadRequest())
 
         # It's already validated
         bundle.obj.save()
 
         for product_row in bundle.data.get('products'):
+            product = Product.objects.get(id=product_row.get('product'))
+            quantity = int(product_row.get('quantity'))
+
             OrderProduct(
-                order_id=bundle.obj.id,
-                product_id=product_row.get('product'),
-                quantity=product_row.get('quantity')
+                order=bundle.obj,
+                product=product,
+                quantity=quantity,
             ).save()
+
+            product.reserve_stock(quantity)
+
+        # Schedule the task to check the order after ORDER_TIMEOUT
+        check_order.apply_async(
+            args=[bundle.obj.id, ],
+            countdown=settings.ORDER_TIMEOUT,
+        )
 
         return bundle
