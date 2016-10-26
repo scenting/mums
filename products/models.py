@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.cache import cache
 from django.utils.translation import ugettext as _
+from math import floor
 
 
 class Product(models.Model):
@@ -66,6 +67,31 @@ class Order(models.Model):
 
     products = models.ManyToManyField(Product, through='OrderProduct',
                                       related_name='order_products')
+
+    def price(self):
+        total_price = 0
+
+        order_categories = set()
+
+        for order_product in self.orderproduct_set.all():
+            price = order_product.product.price
+            quantity = order_product.quantity
+
+            order_categories.add(order_product.product.category)
+
+            if order_product.product.unitary:
+                quantity /= 100
+
+            # Apply discount for 3x2 promotion
+            quantity -= floor(quantity / 3)
+
+            total_price += price * quantity
+
+        # Apply discount for full_menu (20%)
+        if len(order_categories) == len(Product.CATEGORY_CHOICES):
+            total_price *= 0.8
+
+        return total_price
 
 
 class OrderProduct(models.Model):
