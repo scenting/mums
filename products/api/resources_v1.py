@@ -4,6 +4,7 @@ from tastypie.authorization import Authorization
 from tastypie.authentication import Authentication
 from tastypie.http import HttpBadRequest
 from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.validation import Validation
 from tastypie import fields
 from django.shortcuts import get_object_or_404
 from products.models import Product, Order, OrderProduct
@@ -25,6 +26,22 @@ class OrderProductResource(ModelResource):
         allowed_methods = ['get', ]
 
 
+class OrderValidation(Validation):
+
+    def is_valid(self, bundle, request=None):
+        errors = {}
+
+        if not bundle.data.get('products'):
+            errors['products'] = 'No products provided'
+
+        for product_row in bundle.data.get('products'):
+            product = get_object_or_404(Product, pk=product_row.get('product'))
+            if not product.enough_stock(product_row.get('quantity')):
+                errors['quantity'] = 'Not enough stock'
+
+        return errors
+
+
 class OrderResource(ModelResource):
 
     # TODO: prefetch related
@@ -35,6 +52,7 @@ class OrderResource(ModelResource):
         queryset = Order.objects.all()
         resource_name = 'order'
         always_return_data = True
+        validation = OrderValidation()
         authorization = Authorization()
         authentication = Authentication()
         allowed_methods = ['get', 'post', 'patch', ]
@@ -46,14 +64,11 @@ class OrderResource(ModelResource):
             bundle.obj.complete = True
             bundle.obj.save()
 
-    def obj_create(self, bundle, **kwargs):
-        if not bundle.data.get('products'):
-            raise ImmediateHttpResponse(HttpBadRequest('No products provided'))
+    def save(self, bundle, skip_errors=False):
 
-        for product_row in bundle.data.get('products'):
-            product = get_object_or_404(Product, pk=product_row.get('product'))
-            if not product.enough_stock(product_row.get('quantity')):
-                raise ImmediateHttpResponse(HttpBadRequest('Not enough stock'))
+        errors = self.is_valid(bundle)
+        if errors:
+            raise ImmediateHttpResponse(HttpBadRequest(errors))
 
         # It's already validated
         bundle.obj.save()
