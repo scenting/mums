@@ -1,5 +1,7 @@
+import json
 from tastypie.resources import ModelResource
 from tastypie.authorization import Authorization
+from tastypie.authentication import Authentication
 from tastypie.http import HttpBadRequest
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie import fields
@@ -12,7 +14,7 @@ class ProductResource(ModelResource):
     class Meta(object):
         queryset = Product.objects.all()
         resource_name = 'product'
-        # TODO: allow only GET
+        allowed_methods = ['get', ]
 
 
 class OrderProductResource(ModelResource):
@@ -20,11 +22,12 @@ class OrderProductResource(ModelResource):
     class Meta(object):
         queryset = OrderProduct.objects.all()
         resource_name = 'order_product'
-        # TODO: allow only GET
+        allowed_methods = ['get', ]
 
 
 class OrderResource(ModelResource):
 
+    # TODO: prefetch related
     products = fields.ToManyField(OrderProductResource, 'orderproduct_set',
                                   full=True)
 
@@ -33,7 +36,15 @@ class OrderResource(ModelResource):
         resource_name = 'order'
         always_return_data = True
         authorization = Authorization()
-        # TODO: allow only GET, POST, PATCH
+        authentication = Authentication()
+        allowed_methods = ['get', 'post', 'patch', ]
+
+    def obj_update(self, bundle, **kwargs):
+        body = json.loads(bundle.request.body.decode())
+
+        if body.get('complete'):
+            bundle.obj.complete = True
+            bundle.obj.save()
 
     def obj_create(self, bundle, **kwargs):
         if not bundle.data.get('products'):

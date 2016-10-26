@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Please pay your order (#{{order}})</h2>
+    <table>
+    {% for product in products %}
+        <tr>
+            <td><p>{{product.name}}</p></td>
+            <td><p>{{product.price}}</p></td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    </hr>
+
+    <form class="post-form" id="payForm">
+        Card Name:<br>
+        <input type="text" name="cardName" value="Juan">
+        <br>
+        Card Number:<br>
+        <input type="text" name="cardNumber" value="1234 5678 9123">
+        <button type="submit" class="save btn btn-default">Pay</button>
+    </form>
+{% endblock %}
+
+{% block js %}
+<script>
+    var url_index = "{% url "index" %}"
+
+    $('#payForm').submit(function(event) {
+        var self = this;
+        event.preventDefault();
+
+        // Mark order as completed
+        $.ajax({
+            dataType: 'json',
+            contentType: "application/json",
+            url: '/api/v1/order/' + {{order}} +'/',
+            type: 'PATCH',
+            data: JSON.stringify({"complete": true}),
+            complete: function(data) {
+                console.log(data);
+            }
+        });
+    });
+</script>
+{% endblock %}
