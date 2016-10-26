@@ -21,3 +21,5 @@ services:
             - redis
         volumes:
             - ".:/app"
+        environment:
+            - DJANGO_SETTINGS_MODULE=mums.settings.base

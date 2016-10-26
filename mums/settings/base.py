@@ -14,6 +14,8 @@ import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SITE_ROOT = os.path.dirname(BASE_DIR)
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
@@ -67,7 +69,7 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [
-            os.path.normpath(os.path.join(BASE_DIR, 'templates')),
+            os.path.normpath(os.path.join(SITE_ROOT, 'templates')),
         ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -143,13 +145,14 @@ USE_L10N = True
 
 USE_TZ = True
 
+TASTYPIE_DEFAULT_FORMATS = ['json']
+
+ORDER_TIMEOUT = 60  # Timeout for processing an order, in seconds
+
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
-    os.path.normpath(os.path.join(BASE_DIR, 'static')),
+    os.path.normpath(os.path.join(SITE_ROOT, 'static')),
 ]
-
-TASTYPIE_DEFAULT_FORMATS = ['json']

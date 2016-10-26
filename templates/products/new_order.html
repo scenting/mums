@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Please pay your order (#{{order}})</h2>
+<h2>Please pay your order (#{{order.id}})</h2>
     <table>
     {% for product in products %}
         <tr>
