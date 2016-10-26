@@ -4,7 +4,7 @@ from .models import Order
 
 
 @shared_task
-def clean_order(order_id):
+def check_order(order_id):
     # TODO: add function comments
 
     # TODO: Prefetch
