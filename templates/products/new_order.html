@@ -4,14 +4,18 @@
     <h2>
         Please pay your order (#{{order.id}}) within the next <b><span id="remainingSeconds"></span></b> seconds
     </h2>
+    <hr/>
     <table>
-    {% for product in products %}
+    {% for order_product in products %}
         <tr>
-            <td><p>{{product.name}}</p></td>
-            <td><p>{{product.price}}</p></td>
+            <td><p>{{order_product.product.name}}</p></td>
+            <td><p>{{order_product.product.price}}</p></td>
+            <td><p>{% if order_product.product.unitary %}€/ud{% else %}€/100 gr{%endif%}</p></td>
+            <td><p>x {{order_product.quantity}}</p></td>
         </tr>
     {% endfor %}
     </table>
+    <p><b>Total: {{price}} €   </b><i>(All your possible discounts are already applied)</i><p>
 
     </hr>
 
@@ -21,6 +25,7 @@
         <br>
         Card Number:<br>
         <input type="text" name="cardNumber" value="1234 5678 9123">
+        <hr/>
         <button type="submit" class="save btn btn-default">Pay</button>
     </form>
 {% endblock %}

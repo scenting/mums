@@ -16,8 +16,9 @@ def new_order(request):
 
     context = {
         'order': order,
-        'products': order.products.all(),
-        'timeout': settings.ORDER_TIMEOUT
+        'products': order.orderproduct_set.all(),
+        'timeout': settings.ORDER_TIMEOUT,
+        'price': order.price(),
     }
 
     return render(request, 'products/new_order.html', context)

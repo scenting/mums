@@ -79,7 +79,7 @@ class Order(models.Model):
 
             order_categories.add(order_product.product.category)
 
-            if order_product.product.unitary:
+            if not order_product.product.unitary:
                 quantity /= 100
 
             # Apply discount for 3x2 promotion

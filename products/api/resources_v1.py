@@ -67,6 +67,15 @@ class OrderResource(ModelResource):
             bundle.obj.complete = True
             bundle.obj.save()
 
+            # Consolidate stock
+            for order_product in bundle.obj.orderproduct_set.all():
+                product = order_product.product
+                quantity = order_product.quantity
+
+                product.release_stock(quantity)
+                product.stock -= quantity
+                product.save()
+
     def save(self, bundle, skip_errors=False):
 
         if not self.is_valid(bundle):
