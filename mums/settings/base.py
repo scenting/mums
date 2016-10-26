@@ -94,6 +94,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': os.environ.get('DB_ENV_POSTGRES_DB', 'postgres'),
         'USER': os.environ.get('DB_ENV_POSTGRES_USER', 'postgres'),
+        'PASSWORD': os.environ.get('DB_ENV_POSTGRES_PASSWORD', 'postgres'),
         'HOST': os.environ.get('DB_HOST', 'db'),
         'PORT': os.environ.get('DB_PORT', '5432')
     }
@@ -102,16 +103,25 @@ DATABASES = {
 # Redis
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 REDIS_PORT = os.environ.get('REDIS_PORT', '6379')
+REDIS_DB = 0
 
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://{}:{}/0'.format(REDIS_HOST, REDIS_PORT),
+        'LOCATION': 'redis://{}:{}/{}'.format(REDIS_HOST, REDIS_PORT,
+                                              REDIS_DB),
         'OPTIONS': {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient'
         }
     }
 }
+
+# Celery
+BROKER_URL = 'redis://{}:{}/{}'.format(REDIS_HOST, REDIS_PORT, REDIS_DB)
+CELERY_ALWAYS_EAGER = False
+CELERY_IGNORE_RESULT = True
+CELERY_TASK_SERIALIZER = "json"
+CELERY_ACCEPT_CONTENT = ['application/json']
 
 # Password validation
 # https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
