@@ -1,13 +1,13 @@
 import json
-from tastypie.resources import ModelResource
-from tastypie.authorization import Authorization
-from tastypie.authentication import Authentication
-from tastypie.http import HttpBadRequest
-from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.validation import Validation
-from tastypie import fields
-from django.shortcuts import get_object_or_404
 from django.conf import settings
+from django.shortcuts import get_object_or_404
+from tastypie import fields
+from tastypie.authentication import Authentication
+from tastypie.authorization import Authorization
+from tastypie.exceptions import ImmediateHttpResponse
+from tastypie.http import HttpBadRequest
+from tastypie.resources import ModelResource
+from tastypie.validation import Validation
 
 from products.models import Product, Order, OrderProduct
 from products.tasks import check_order
@@ -32,15 +32,23 @@ class OrderProductResource(ModelResource):
 class OrderValidation(Validation):
 
     def is_valid(self, bundle, request=None):
+        """
+        Check the data received to make sure the product exists and that we
+        have enough stock to make a sale. It takes into account the real stock
+        of the product, that is, the stock minus the items reserved by other
+        orders
+        """
         errors = {}
 
         if not bundle.data.get('products'):
             errors['products'] = 'No products provided'
-
-        for product_row in bundle.data.get('products'):
-            product = get_object_or_404(Product, pk=product_row.get('product'))
-            if not product.enough_stock(int(product_row.get('quantity'))):
-                errors['quantity'] = 'Not enough stock'
+        else:
+            for product_row in bundle.data.get('products'):
+                product = get_object_or_404(
+                    Product, pk=product_row.get('product')
+                )
+                if not product.enough_stock(int(product_row.get('quantity'))):
+                    errors['quantity'] = 'Not enough stock'
 
         return errors
 
@@ -61,6 +69,10 @@ class OrderResource(ModelResource):
         allowed_methods = ['get', 'post', 'patch', ]
 
     def obj_update(self, bundle, **kwargs):
+        """
+        Marks an order as complete when the payment is done consolidating the
+        stock (releasing the reserved units and setting them as sold)
+        """
         body = json.loads(bundle.request.body.decode())
 
         if body.get('complete'):
@@ -77,7 +89,11 @@ class OrderResource(ModelResource):
                 product.save()
 
     def save(self, bundle, skip_errors=False):
-
+        """
+        Creates a new pending order reserving the necessary stock and
+        scheduling a task to release the stock in case the order is not paid
+        within the ORDER_TIMEOUT
+        """
         if not self.is_valid(bundle):
             raise ImmediateHttpResponse(HttpBadRequest())
 
@@ -94,6 +110,8 @@ class OrderResource(ModelResource):
                 quantity=quantity,
             ).save()
 
+            # Reserve the stock to avoid other orders buying our stock while
+            # we are paying
             product.reserve_stock(quantity)
 
         # Schedule the task to check the order after ORDER_TIMEOUT

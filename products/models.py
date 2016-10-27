@@ -1,5 +1,5 @@
-from django.db import models
 from django.core.cache import cache
+from django.db import models
 from django.utils.translation import ugettext as _
 from math import floor
 
@@ -18,7 +18,6 @@ class Product(models.Model):
 
     name = models.CharField(_(u'Name'), max_length=256)
 
-    # TODO: Add validator for price < 0
     price = models.FloatField(_(u'Price'))
 
     category = models.PositiveSmallIntegerField(_(u'Category'),
@@ -30,16 +29,20 @@ class Product(models.Model):
 
     @property
     def reserved(self):
+        """ Check the amount reserved but not yet paid using redis """
         return cache.get(self._get_redis_key()) or 0
 
     @property
     def real_stock(self):
+        """ Get the 'real' stock as current stock minus reserved items """
         return self.stock - self.reserved
 
     def enough_stock(self, quantity):
+        """ Check if there is enough stock to make a sale """
         return self.real_stock > quantity
 
     def reserve_stock(self, quantity):
+        """ Mark quantity as reserved but not yet paid """
         if not isinstance(quantity, int) or not self.enough_stock(quantity):
             raise ValueError('Not enough stock')
 
@@ -49,12 +52,14 @@ class Product(models.Model):
             cache.set(self._get_redis_key(), quantity)
 
     def release_stock(self, quantity):
+        """ Mark quantity as no longed reserved """
         if not isinstance(quantity, int) or quantity > self.reserved:
             raise ValueError('Not that much stock is reserved')
 
         cache.decr(self._get_redis_key(), quantity)
 
     def _get_redis_key(self):
+        """ Get redis unique product token """
         return 'product_#{}'.format(self.id)
 
 
@@ -69,6 +74,13 @@ class Order(models.Model):
                                       related_name='order_products')
 
     def price(self):
+        """
+        Gets the total price of an order taking into consideration the price
+        scheme of each product (unitary or not) as well as applying the
+        appropiate discounts:
+            - 3x2 offer: Get 3 pay 2 (only on unitary products)
+            - Full menu: Get 20% off when buying products from every category
+        """
         total_price = 0
 
         order_categories = set()
@@ -80,10 +92,10 @@ class Order(models.Model):
             order_categories.add(order_product.product.category)
 
             if not order_product.product.unitary:
-                quantity /= 100
-
-            # Apply discount for 3x2 promotion
-            quantity -= floor(quantity / 3)
+                quantity /= 100  # Price scheme is by €/100gr
+            else:
+                # Apply discount for 3x2 promotion on unitary products
+                quantity -= floor(quantity / 3)
 
             total_price += price * quantity
 
@@ -99,4 +111,4 @@ class OrderProduct(models.Model):
 
     product = models.ForeignKey(Product)
 
-    quantity = models.IntegerField(_(u'Quantity'))
+    quantity = models.PositiveIntegerField(_(u'Quantity'))
