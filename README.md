@@ -44,6 +44,12 @@ If the order isn't paid when the timeout expires, the order is canceled and the 
 
 There are some discounts applied when you place and order, if you buy a full menu you will get a 20% off and if you get 3 items of the same product you will pay for 2 of them (This only applies to products charged by units).
 
+If you go on a shopping spree and have to stock left, you can always call your supplier with:
+```
+docker-compose run --rm web ./manage.py restock_products -q 10
+```
+
+
 ### Improvements
 There is always room for improvements, in this case, the frontend clearly needs some redesign as well as a better way of showing the discounts being applied to each order.
 
