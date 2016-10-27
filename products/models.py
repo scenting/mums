@@ -39,7 +39,7 @@ class Product(models.Model):
 
     def enough_stock(self, quantity):
         """ Check if there is enough stock to make a sale """
-        return self.real_stock > quantity
+        return self.real_stock >= quantity
 
     def reserve_stock(self, quantity):
         """ Mark quantity as reserved but not yet paid """

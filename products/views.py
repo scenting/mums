@@ -6,7 +6,7 @@ from .models import Product, Order
 
 def index(request):
     context = {
-        'products': Product.objects.all(),
+        'products': Product.objects.all().order_by('id'),
     }
     return render(request, 'products/index.html', context)
 

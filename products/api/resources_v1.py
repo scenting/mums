@@ -55,7 +55,6 @@ class OrderValidation(Validation):
 
 class OrderResource(ModelResource):
 
-    # TODO: prefetch related
     products = fields.ToManyField(OrderProductResource, 'orderproduct_set',
                                   full=True)
 

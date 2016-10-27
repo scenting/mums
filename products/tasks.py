@@ -5,9 +5,10 @@ from .models import Order
 
 @shared_task
 def check_order(order_id):
-    # TODO: add function comments
-
-    # TODO: Prefetch
+    """
+    Check if an order has been paid, otherwise release the reserved stock and
+    delete the order
+    """
     order = Order.objects.get(id=order_id)
 
     if not order.complete:  # Delete the order and release stock if timed out
