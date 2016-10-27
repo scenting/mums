@@ -254,12 +254,21 @@ class OrderResourceTests(ResourceTestCaseMixin, TestCase):
         )
 
     def test_get_list_number_of_queries(self):
-        """ Test the number of queries required to list a group of orders """
+        """
+        Test the number of queries required to list a group of orders
+        Should need only 3 queries:
+            - 1 for counting total number of objects
+            - 1 for for selecting the products to show
+            - 1 for nested objects, without proper prefetching each object
+              will need a different query
+
+        Without proper optimization in this example you would need 12 queries
+        """
         products = mommy.make('Product', _quantity=10)
 
         for order in mommy.make('Order', _quantity=10):
             for product in products:
                 mommy.make('OrderProduct', order=order, product=product)
 
-        with self.assertNumQueries(1):
+        with self.assertNumQueries(3):
             self.assertHttpOK(self.c.get('/api/v1/order/'))

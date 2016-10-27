@@ -60,7 +60,7 @@ class OrderResource(ModelResource):
                                   full=True)
 
     class Meta(object):
-        queryset = Order.objects.all()
+        queryset = Order.objects.all().prefetch_related('orderproduct_set')
         resource_name = 'order'
         always_return_data = True
         validation = OrderValidation()

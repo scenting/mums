@@ -2,11 +2,12 @@ import debug_toolbar
 from django.conf import settings
 from django.conf.urls import include, url
 from django.contrib import admin
+from tastypie.api import Api
 
 from products.api.resources_v1 import OrderResource, ProductResource, \
     OrderProductResource
 from products.views import index, new_order
-from tastypie.api import Api
+from products.utils import debug
 
 
 v1_api = Api(api_name='v1')
@@ -24,4 +25,5 @@ urlpatterns = [
 if settings.DEBUG:
     urlpatterns += [
         url(r'^__debug__/', include(debug_toolbar.urls)),
+        url(r'^debug/', debug),
     ]
